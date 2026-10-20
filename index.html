@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fire & Water</title>
+  <link rel="icon" href="icon.png">
+  <style>
+    html, body { margin: 0; height: 100%; background: #19161f; overflow: hidden; }
+    body { display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; }
+    /* Keep the game's 3:2 shape and make it as big as the window allows. */
+    #game { width: min(100vw, 150vh); aspect-ratio: 3 / 2; position: relative; }
+    canvas { width: 100%; height: 100%; display: block; outline: none; }
+    #loading { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 16px;
+               align-items: center; justify-content: center; color: #f3eee6; font-size: 20px; }
+    #loading img { width: 96px; height: 96px; }
+    #loading.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <canvas id="bevy" tabindex="0"></canvas>
+    <div id="loading"><img src="icon.png" alt="">Loading Fire &amp; Water…</div>
+  </div>
+  <script type="module">
+    import init from "./fire-water-0_3_1.js";
+    const canvas = document.getElementById("bevy");
+    const loading = document.getElementById("loading");
+    // Bevy takes over the page's event loop by throwing a special exception
+    // once it starts; that's not an error.
+    init().catch((e) => {
+      if (!String(e).includes("Using exceptions for control flow")) {
+        loading.textContent = "Couldn't start the game: " + e;
+        throw e;
+      }
+    });
+    // Hide the loading screen once the game has drawn its first frame.
+    const ready = setInterval(() => {
+      if (canvas.width > 0 && canvas.height > 0 && performance.now() > 500) {
+        loading.classList.add("hidden");
+        canvas.focus();
+        clearInterval(ready);
+      }
+    }, 100);
+    canvas.addEventListener("pointerdown", () => canvas.focus());
+  </script>
+</body>
+</html>
